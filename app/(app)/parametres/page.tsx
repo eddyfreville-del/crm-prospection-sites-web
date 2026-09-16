@@ -41,19 +41,20 @@ export default function ParametresPage() {
       </div>
 
       <div className="rounded-xl border border-line bg-panel p-5">
-        <p className="text-sm font-medium text-ink">Initialisation de la base Notion</p>
+        <p className="text-sm font-medium text-ink">Initialisation / réparation de la base Notion</p>
         <p className="mt-2 text-sm text-inkDim">
-          À utiliser une seule fois, après le tout premier déploiement, pour créer la base
-          « CRM — Prospection Sites Web » avec toutes les bonnes colonnes. Sans effet si
+          Si aucune base n&apos;existe encore (
           <code className="mx-1 rounded bg-panel2 px-1 py-0.5 text-xs">NOTION_DATABASE_ID</code>
-          est déjà configuré.
+          non configuré), ce bouton crée la base « CRM — Prospection Sites Web » avec toutes les
+          bonnes colonnes. Si une base existe déjà, il vérifie et ajoute les colonnes qui
+          manqueraient — sûr à relancer à tout moment, ça ne duplique rien.
         </p>
         <button
           onClick={runSetup}
           disabled={running}
           className="mt-4 rounded-lg border border-lineStrong bg-panel2 px-4 py-2 text-sm font-medium text-ink transition hover:bg-panel2/70 disabled:opacity-50"
         >
-          {running ? "Création en cours…" : "Créer la base Notion"}
+          {running ? "Opération en cours…" : "Créer / réparer la base Notion"}
         </button>
 
         {error && (
@@ -64,8 +65,14 @@ export default function ParametresPage() {
         {result && (
           <div className="mt-3 space-y-1 rounded-lg border border-good/30 bg-good/10 px-3 py-2 text-sm text-good">
             <p>{result.message}</p>
-            <p className="font-mono text-xs">NOTION_DATABASE_ID={result.NOTION_DATABASE_ID}</p>
-            <p className="font-mono text-xs">NOTION_DATA_SOURCE_ID={result.NOTION_DATA_SOURCE_ID}</p>
+            {!result.repaired && (
+              <>
+                <p className="font-mono text-xs">NOTION_DATABASE_ID={result.NOTION_DATABASE_ID}</p>
+                <p className="font-mono text-xs">
+                  NOTION_DATA_SOURCE_ID={result.NOTION_DATA_SOURCE_ID}
+                </p>
+              </>
+            )}
           </div>
         )}
       </div>

@@ -46,8 +46,9 @@ async function notionFetch<T = any>(path: string, init?: RequestInit): Promise<T
 
 const SELECT = (name: string, color: string) => ({ name, color });
 
-export async function createProspectionDatabase(parentPageId: string) {
-  const properties: Record<string, any> = {
+/** Schéma des colonnes, partagé entre la création et la réparation d'une base existante. */
+function prospectSchemaProperties(): Record<string, any> {
+  return {
     Entreprise: { title: {} },
     Statut: {
       select: {
@@ -86,6 +87,7 @@ export async function createProspectionDatabase(parentPageId: string) {
           SELECT("Instagram", "pink"),
           SELECT("LinkedIn", "purple"),
           SELECT("Téléphone", "green"),
+          SELECT("WhatsApp", "green"),
         ],
       },
     },
@@ -101,13 +103,21 @@ export async function createProspectionDatabase(parentPageId: string) {
     Maquette: { url: {} },
     Notes: { rich_text: {} },
   };
+}
+
+export async function createProspectionDatabase(parentPageId: string) {
+  const properties = prospectSchemaProperties();
 
   const database = await notionFetch<any>("/databases", {
     method: "POST",
     body: JSON.stringify({
       parent: { type: "page_id", page_id: parentPageId },
       title: [{ type: "text", text: { content: "CRM — Prospection Sites Web" } }],
-      properties,
+      // Depuis la version d'API 2025-09-03, le schéma de colonnes se déclare
+      // sur la source de données initiale, pas au niveau racine — un
+      // "properties" à plat ici est silencieusement ignoré et la base se
+      // retrouve avec la seule colonne "Name" par défaut.
+      initial_data_source: { properties },
     }),
   });
 
@@ -119,6 +129,20 @@ export async function createProspectionDatabase(parentPageId: string) {
   }
 
   return { databaseId: database.id as string, dataSourceId: dataSourceId as string };
+}
+
+/**
+ * Répare une base déjà créée dont le schéma de colonnes n'a pas été
+ * appliqué correctement (voir le correctif ci-dessus sur
+ * `initial_data_source`) : ajoute les colonnes manquantes sur la source de
+ * données existante, sans rien recréer. Sûr à exécuter plusieurs fois.
+ */
+export async function repairProspectionDatabaseSchema(dataSourceId: string) {
+  const properties = prospectSchemaProperties();
+  await notionFetch<any>(`/data_sources/${dataSourceId}`, {
+    method: "PATCH",
+    body: JSON.stringify({ properties }),
+  });
 }
 
 /* -------------------------------------------------------------------------- */

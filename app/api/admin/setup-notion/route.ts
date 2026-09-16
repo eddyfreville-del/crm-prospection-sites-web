@@ -1,5 +1,5 @@
 import { verifyRequest, unauthorized } from "@/lib/auth-server";
-import { createProspectionDatabase } from "@/lib/notionClient";
+import { createProspectionDatabase, repairProspectionDatabaseSchema } from "@/lib/notionClient";
 
 export const dynamic = "force-dynamic";
 
@@ -7,23 +7,30 @@ export const dynamic = "force-dynamic";
  * Endpoint à usage unique : crée la base Notion "CRM — Prospection Sites Web"
  * sous la page indiquée, avec toutes les colonnes attendues par l'app.
  *
- * À appeler une seule fois après le premier déploiement (voir README), avec
- * NOTION_TOKEN déjà configuré dans les variables d'environnement Netlify.
- * Se bloque volontairement si NOTION_DATABASE_ID est déjà défini, pour éviter
- * de recréer une base par erreur.
+ * Si NOTION_DATABASE_ID et NOTION_DATA_SOURCE_ID sont déjà configurés, répare
+ * plutôt le schéma de la base existante (ajoute les colonnes manquantes) au
+ * lieu d'en recréer une — sûr à appeler plusieurs fois.
  */
 export async function POST(req: Request) {
   const user = await verifyRequest(req);
   if (!user) return unauthorized();
 
-  if (process.env.NOTION_DATABASE_ID) {
-    return Response.json(
-      {
-        error:
-          "NOTION_DATABASE_ID est déjà configuré — la base a probablement déjà été créée. Supprime cette variable si tu veux vraiment en recréer une.",
-      },
-      { status: 409 }
-    );
+  const existingDataSourceId = process.env.NOTION_DATA_SOURCE_ID;
+  if (existingDataSourceId) {
+    try {
+      await repairProspectionDatabaseSchema(existingDataSourceId);
+      return Response.json({
+        message:
+          "Schéma de colonnes vérifié et réparé sur la base existante. Aucune valeur à changer dans Netlify — retourne simplement sur le Dashboard.",
+        repaired: true,
+      });
+    } catch (err: any) {
+      console.error("POST /api/admin/setup-notion (repair) —", err);
+      return Response.json(
+        { error: err?.message || "Erreur lors de la réparation du schéma Notion." },
+        { status: err?.status || 502 }
+      );
+    }
   }
 
   let parentPageId: string | undefined;
