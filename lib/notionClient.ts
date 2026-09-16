@@ -138,7 +138,21 @@ export async function createProspectionDatabase(parentPageId: string) {
  * données existante, sans rien recréer. Sûr à exécuter plusieurs fois.
  */
 export async function repairProspectionDatabaseSchema(dataSourceId: string) {
+  // Une base n'a qu'une seule colonne "titre" : impossible d'en ajouter une
+  // deuxième nommée "Entreprise" si Notion en a déjà créé une par défaut
+  // (généralement "Name"). Il faut renommer celle qui existe, pas en
+  // ajouter une nouvelle.
+  const current = await notionFetch<any>(`/data_sources/${dataSourceId}`, { method: "GET" });
+  const currentProps: Record<string, any> = current.properties || {};
+  const titleEntry = Object.entries(currentProps).find(([, v]: any) => v?.type === "title");
+  const currentTitleName = titleEntry?.[0];
+
   const properties = prospectSchemaProperties();
+  if (currentTitleName && currentTitleName !== "Entreprise") {
+    delete properties["Entreprise"];
+    properties[currentTitleName] = { name: "Entreprise", title: {} };
+  }
+
   await notionFetch<any>(`/data_sources/${dataSourceId}`, {
     method: "PATCH",
     body: JSON.stringify({ properties }),
