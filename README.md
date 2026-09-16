@@ -83,6 +83,11 @@ notes), en plus — pas à la place — de la notification e-mail déjà en plac
 si le webhook échoue pour une raison ou une autre, le message reste
 consultable normalement dans Netlify Forms et par e-mail, rien n'est perdu.
 
+Le formulaire Romand Web inclut un champ « e-mail ou numéro de téléphone » :
+sa valeur est automatiquement rangée dans la colonne Notion `Email` (si elle
+ressemble à une adresse e-mail) ou `Téléphone` (sinon), pour que chaque
+prospect créé soit directement contactable depuis le CRM.
+
 ## Structure du projet
 
 ```

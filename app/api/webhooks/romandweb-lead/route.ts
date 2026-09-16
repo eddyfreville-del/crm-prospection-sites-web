@@ -47,6 +47,7 @@ export async function POST(req: Request) {
   const nom = String(data.nom || "").trim();
   const besoin = String(data.besoin || "").trim();
   const moyenRaw = String(data.moyen || "").trim();
+  const contactRaw = String(data.contact || "").trim();
 
   if (!nom) {
     return Response.json({ error: "Champ 'nom' manquant dans la soumission." }, { status: 400 });
@@ -54,16 +55,25 @@ export async function POST(req: Request) {
 
   const canal = (CANAUX as readonly string[]).includes(moyenRaw) ? (moyenRaw as Canal) : null;
 
+  // Le champ "contact" du formulaire est en texte libre (e-mail OU
+  // téléphone) : on le range dans la bonne colonne Notion selon sa forme,
+  // et dans tous les cas dans les notes pour ne jamais perdre l'info brute.
+  const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactRaw);
+  const email = isEmail ? contactRaw : "";
+  const telephone = contactRaw && !isEmail ? contactRaw : "";
+
   const input: Partial<ProspectInput> = {
     entreprise: nom,
     statut: "À contacter",
     contact: nom,
+    email,
+    telephone,
     canal,
     priorite: "Haute",
     datePremierContact: new Date().toISOString().slice(0, 10),
     notes: `Lead entrant depuis le formulaire de contact du site Romand Web.${
-      besoin ? `\n\nBesoin exprimé : ${besoin}` : ""
-    }`,
+      contactRaw ? `\n\nCoordonnées indiquées : ${contactRaw}` : ""
+    }${besoin ? `\n\nBesoin exprimé : ${besoin}` : ""}`,
   };
 
   try {
