@@ -1,0 +1,35 @@
+{
+  "name": "crm-prospection-sites-web",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "setup:notion": "node scripts/setup-notion.mjs"
+  },
+  "dependencies": {
+    "next": "16.3.5",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "@dnd-kit/core": "6.1.0",
+    "lucide-react": "0.446.0",
+    "clsx": "2.1.1",
+    "netlify-identity-widget": "1.9.2",
+    "server-only": "0.0.1"
+  },
+  "devDependencies": {
+    "typescript": "5.6.2",
+    "@types/node": "20.16.10",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@types/netlify-identity-widget": "1.9.6",
+    "tailwindcss": "3.4.13",
+    "postcss": "8.4.49",
+    "autoprefixer": "10.4.20",
+    "eslint": "9.39.5",
+    "eslint-config-next": "16.3.5",
+    "@netlify/plugin-nextjs": "5.15.13"
+  }
+}
