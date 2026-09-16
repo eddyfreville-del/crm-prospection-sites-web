@@ -58,6 +58,31 @@ Configuration (une seule fois, dans le tableau de bord Netlify) :
 4. **Identity → Invite users** → ton adresse e-mail
 5. Ouvrir l'e-mail d'invitation reçu, définir un mot de passe
 
+## Automatisation : leads entrants depuis Romand Web
+
+Le formulaire de contact du site vitrine Romand Web peut créer automatiquement
+une fiche dans ce CRM à chaque nouveau message, via un webhook Netlify Forms.
+
+1. Dans **Netlify → Environment variables** (ce site-ci, le CRM), ajoute
+   `LEAD_WEBHOOK_SECRET` avec une valeur aléatoire longue (ne la partage
+   qu'entre ces deux configurations, jamais publiquement).
+2. Redéploie ce site.
+3. Sur le site **Romand Web** dans Netlify → **Forms** → le formulaire
+   **contact** → **Submission notifications** → **Add notification** →
+   **HTTP POST request**.
+4. URL du webhook :
+   ```
+   https://<ton-site-crm>.netlify.app/api/webhooks/romandweb-lead?token=LEAD_WEBHOOK_SECRET
+   ```
+   (remplace `LEAD_WEBHOOK_SECRET` par la vraie valeur choisie à l'étape 1)
+5. Enregistre.
+
+À partir de là, chaque message reçu sur Romand Web crée une fiche « À
+contacter » dans ce CRM (priorité Haute, avec le besoin exprimé dans les
+notes), en plus — pas à la place — de la notification e-mail déjà en place :
+si le webhook échoue pour une raison ou une autre, le message reste
+consultable normalement dans Netlify Forms et par e-mail, rien n'est perdu.
+
 ## Structure du projet
 
 ```

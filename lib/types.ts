@@ -14,7 +14,7 @@ export type Statut = (typeof STATUTS)[number];
 export const NICHES = ["Garage", "Immobilier", "Chauffeur privé", "Autre"] as const;
 export type Niche = (typeof NICHES)[number];
 
-export const CANAUX = ["Email", "Instagram", "LinkedIn", "Téléphone"] as const;
+export const CANAUX = ["Email", "Instagram", "LinkedIn", "Téléphone", "WhatsApp"] as const;
 export type Canal = (typeof CANAUX)[number];
 
 export const PRIORITES = ["Haute", "Moyenne", "Basse"] as const;
